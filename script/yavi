@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+#
+# yavi -- Front end to the Parse::Yavi module
+#
+
+=head1 NAME
+
+yavi - A perl front-end to the Parse::Yavi module
+
+=head1 SYNOPSIS
+
+    yavi [options] grammar[.yv]
+    yavi --help
+    yavi --version
+
+        -m module   Give your parser module the name <module>
+                    Default is <grammar>
+        -o outfile  Create the file <outfile> for your parser module
+                    Default is autoload/{grammar}.vim or,
+                    if -m A#Module#Name is specified, Name.vim
+        --help      Display this help message
+
+        grammar     The grammar file.
+
+=head1 DESCRIPTION
+
+=head1 OPTIONS IN DETAIL
+
+=over 4
+
+=item I<-v>
+
+=cut
+
+require 5.004;
+
+use utf8;
+use strict;
+use warnings;
+use Carp qw/croak cluck/;
+use Getopt::Long qw/:config posix_default no_ignore_case gnu_compat/;
+use Pod::Usage;
+use Parse::Yavi::EBNF;
+use Perl6::Slurp;
+
+my %opts;
+GetOptions(
+    \%opts, qw/
+    help|h|man|usage|
+    module|m=s
+    outfile|o=s
+    debug
+/);
+pod2usage(2) if $opts{help};
+pod2usage(2) if @ARGV <= 0;
+
+my ($gramamrfile)= @ARGV;
+
+unless(-f $gramamrfile)
+{
+    die "File not exist `$gramamrfile'.";
+}
+
+my $ebnf_parser= Parse::Yavi::EBNF->new;
+
+{
+    my $input= slurp '<:encoding(utf8)', $gramamrfile
+        or die "Couldn't read `$gramamrfile'.";
+    $ebnf_parser->input($input);
+}
+
+# Bit Value    Outputs
+#   0x01         Token reading (useful for Lexer debugging)
+#   0x02         States information
+#   0x04         Driver actions (shifts, reduces, accept...)
+#   0x08         Parse Stack dump
+#   0x10         Error Recovery tracing
+my $value= $ebnf_parser->YYParse(yydebug => 0x01);
+
+print $value || 'undef';
+
+1;

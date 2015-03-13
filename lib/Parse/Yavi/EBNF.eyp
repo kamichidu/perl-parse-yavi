@@ -1,0 +1,136 @@
+%{
+use strict;
+use warnings;
+%}
+
+%token IDENTIFIER=      /([a-zA-Z_][a-zA-Z0-9_]*)/
+%token STRINGLITERAL=   /('(?:[^']|\\')*'|"(?:[^"]|\\")*")/
+%token REGEX=           /(qr(.)(?:[^\2]|\\\2)*?\2)/
+%token RAW_REGEX=       /([^\r\n]+)/
+%token HEAD_CODE=       /((?:.|\r|\n)*?)(?:\%\})/
+%token TAIL_CODE=       /(.*)\Z/
+
+%start file
+
+%%
+
+file
+    : header_section
+      '%%'
+      body_section
+      '%%'
+      tail_section
+        {{header => $_[1], body => $_[3], tail => $_[5]}}
+    ;
+
+header_section
+    : ('%{' HEAD_CODE? '%}')?
+      definitions
+        {{snippet => {}, definitions => $_[2]}}
+    ;
+
+definitions
+    : definition*
+    ;
+
+definition
+    : '%token' IDENTIFIER RAW_REGEX
+        {{kind => 'token', name => $_[2], regex => $_[3]}}
+    | '%union'
+        {{kind => 'union'}}
+    | '%type'
+        {{kind => 'type'}}
+    ;
+
+body_section
+    : ebnf
+    ;
+
+tail_section
+    : TAIL_CODE ?
+    ;
+
+ebnf
+    : rulelist
+    ;
+
+rulelist
+    : rule*
+    ;
+
+rule
+    : id ':' alternatives
+        {{kind => 'rule', name => $_[1], value => $_[3]}}
+    ;
+
+id
+    : IDENTIFIER
+        {{kind => 'id', value => $_[1]}}
+    ;
+
+alternatives
+    : alternative ('|' alternative)*
+    ;
+
+alternative
+    : element*
+    ;
+
+element
+    : optional
+    | zero_or_more
+    | one_or_more
+    | text
+    | captext
+    | id
+    ;
+
+optional
+    : '[' alternatives ']'
+    ;
+
+zero_or_more
+    : '{' alternatives '}'
+    ;
+
+one_or_more
+    : '(' alternatives ')'
+    ;
+
+captext
+    : CAPTEXT
+    ;
+
+text
+    : TEXT
+    | STRINGLITERAL
+    ;
+
+id
+    : IDENTIFIER
+    ;
+
+    : expression '?'
+        {{kind => '?', value => $_[1]}}
+    | expression '*'
+        {{kind => '*', value => $_[1]}}
+    | expression '+'
+        {{kind => '+', value => $_[1]}}
+    | expression
+        {$_[1]}
+    ;
+
+expression
+    : rulename
+        {{kind => 'ref', value => $_[1]}}
+    | STRINGLITERAL
+        {{kind => 'string', value => $_[1]}}
+    | REGEX
+        {{kind => 'regex', value => $_[1]}}
+    | '(' alternative ('|' alternative)* ')'
+        {{kind => 'group', value => $_[2]}}
+    ;
+
+%%
+
+1;
