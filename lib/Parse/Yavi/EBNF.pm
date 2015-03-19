@@ -44,14 +44,11 @@ our $LEX = sub {
 
       m{\G(\s+)}gc and $self->tokenline($1 =~ tr{\n}{});
 
-      m{\G(\%token|\%union|\%type|\%\{|\%\}|\%\%|\:|\;|\+|\*|\)|\?|\||\()}gc and return ($1, $1);
+      m{\G(\:|\?|\;|\+|\||\(|\*|\))}gc and return ($1, $1);
 
-      /\G([a-zA-Z_][a-zA-Z0-9_]*)/gc and return ('IDENTIFIER', $1);
-      /\G('(?:[^']|\\')*'|"(?:[^"]|\\")*")/gc and return ('STRINGLITERAL', $1);
-      /\G(qr(.)(?:[^\2]|\\\2)*?\2)/gc and return ('REGEX', $1);
-      /\G([^\r\n]+)/gc and return ('RAW_REGEX', $1);
-      /\G((?:.|\r|\n)*?)(?:\%\})/gc and return ('HEAD_CODE', $1);
-      /\G(.*)\Z/gc and return ('TAIL_CODE', $1);
+      /\G('(?:[^']|\\')*'|"(?:[^"]|\\")*")/gc and return ('StringLiteral', $1);
+      /\G(qr(.)(?:[^\2]|\\\2)*?\2)/gc and return ('Regex', $1);
+      /\G([a-zA-Z_][a-zA-Z0-9_]*)/gc and return ('Identifier', $1);
 
 
       return ('', undef) if ($_ eq '') || (defined(pos($_)) && (pos($_) >= length($_)));
@@ -68,7 +65,7 @@ our $LEX = sub {
 ;
 
 
-#line 71 lib\Parse\Yavi\EBNF.pm
+#line 68 lib\Parse\Yavi\EBNF.pm
 
 my $warnmessage =<< "EOFWARN";
 Warning!: Did you changed the \@Parse::Yavi::EBNF::ISA variable inside the header section of the eyapp program?
@@ -83,106 +80,64 @@ sub new {
     yyversion => '1.182',
     yyGRAMMAR  =>
 [#[productionNameAndLabel => lhs, [ rhs], bypass]]
-  [ '_SUPERSTART' => '$start', [ 'file', '$end' ], 0 ],
-  [ 'file_1' => 'file', [ 'header_section', '%%', 'body_section', '%%', 'tail_section' ], 0 ],
-  [ '_OPTIONAL' => 'OPTIONAL-1', [ 'HEAD_CODE' ], 0 ],
-  [ '_OPTIONAL' => 'OPTIONAL-1', [  ], 0 ],
-  [ '_PAREN' => 'PAREN-2', [ '%{', 'OPTIONAL-1', '%}' ], 0 ],
-  [ '_OPTIONAL' => 'OPTIONAL-3', [ 'PAREN-2' ], 0 ],
-  [ '_OPTIONAL' => 'OPTIONAL-3', [  ], 0 ],
-  [ 'header_section_7' => 'header_section', [ 'OPTIONAL-3', 'definitions' ], 0 ],
-  [ '_STAR_LIST' => 'STAR-4', [ 'STAR-4', 'definition' ], 0 ],
+  [ '_SUPERSTART' => '$start', [ 'yavi', '$end' ], 0 ],
+  [ 'yavi_1' => 'yavi', [ 'ebnf' ], 0 ],
+  [ 'ebnf_2' => 'ebnf', [ 'rulelist' ], 0 ],
+  [ '_STAR_LIST' => 'STAR-1', [ 'STAR-1', 'rule' ], 0 ],
+  [ '_STAR_LIST' => 'STAR-1', [  ], 0 ],
+  [ 'rulelist_5' => 'rulelist', [ 'STAR-1' ], 0 ],
+  [ 'rule_6' => 'rule', [ 'id', ':', 'alternatives', ';' ], 0 ],
+  [ '_PAREN' => 'PAREN-2', [ '|', 'alternative' ], 0 ],
+  [ '_STAR_LIST' => 'STAR-3', [ 'STAR-3', 'PAREN-2' ], 0 ],
+  [ '_STAR_LIST' => 'STAR-3', [  ], 0 ],
+  [ 'alternatives_10' => 'alternatives', [ 'alternative', 'STAR-3' ], 0 ],
+  [ '_STAR_LIST' => 'STAR-4', [ 'STAR-4', 'element' ], 0 ],
   [ '_STAR_LIST' => 'STAR-4', [  ], 0 ],
-  [ 'definitions_10' => 'definitions', [ 'STAR-4' ], 0 ],
-  [ 'definition_11' => 'definition', [ '%token', 'IDENTIFIER', 'RAW_REGEX' ], 0 ],
-  [ 'definition_12' => 'definition', [ '%union' ], 0 ],
-  [ 'definition_13' => 'definition', [ '%type' ], 0 ],
-  [ 'body_section_14' => 'body_section', [ 'ebnf' ], 0 ],
-  [ '_OPTIONAL' => 'OPTIONAL-5', [ 'TAIL_CODE' ], 0 ],
-  [ '_OPTIONAL' => 'OPTIONAL-5', [  ], 0 ],
-  [ 'tail_section_17' => 'tail_section', [ 'OPTIONAL-5' ], 0 ],
-  [ 'ebnf_18' => 'ebnf', [ 'rules' ], 0 ],
-  [ '_STAR_LIST' => 'STAR-6', [ 'STAR-6', 'rule' ], 0 ],
-  [ '_STAR_LIST' => 'STAR-6', [  ], 0 ],
-  [ 'rules_21' => 'rules', [ 'STAR-6' ], 0 ],
-  [ 'rule_22' => 'rule', [ 'rulename', ':', 'alternatives', ';' ], 0 ],
-  [ 'rulename_23' => 'rulename', [ 'IDENTIFIER' ], 0 ],
-  [ '_PLUS_LIST' => 'PLUS-7', [ 'PLUS-7', 'alternative' ], 0 ],
-  [ '_PLUS_LIST' => 'PLUS-7', [ 'alternative' ], 0 ],
-  [ '_PLUS_LIST' => 'PLUS-8', [ 'PLUS-8', 'alternative' ], 0 ],
-  [ '_PLUS_LIST' => 'PLUS-8', [ 'alternative' ], 0 ],
-  [ '_PAREN' => 'PAREN-9', [ '|', 'PLUS-8' ], 0 ],
-  [ '_STAR_LIST' => 'STAR-10', [ 'STAR-10', 'PAREN-9' ], 0 ],
-  [ '_STAR_LIST' => 'STAR-10', [  ], 0 ],
-  [ 'alternatives_31' => 'alternatives', [ 'PLUS-7', 'STAR-10' ], 0 ],
-  [ 'alternatives_32' => 'alternatives', [  ], 0 ],
-  [ 'alternative_33' => 'alternative', [ 'expression', '?' ], 0 ],
-  [ 'alternative_34' => 'alternative', [ 'expression', '*' ], 0 ],
-  [ 'alternative_35' => 'alternative', [ 'expression', '+' ], 0 ],
-  [ 'alternative_36' => 'alternative', [ 'expression' ], 0 ],
-  [ '_PAREN' => 'PAREN-11', [ '|', 'alternative' ], 0 ],
-  [ '_STAR_LIST' => 'STAR-12', [ 'STAR-12', 'PAREN-11' ], 0 ],
-  [ '_STAR_LIST' => 'STAR-12', [  ], 0 ],
-  [ 'expression_40' => 'expression', [ 'rulename' ], 0 ],
-  [ 'expression_41' => 'expression', [ 'STRINGLITERAL' ], 0 ],
-  [ 'expression_42' => 'expression', [ 'REGEX' ], 0 ],
-  [ 'expression_43' => 'expression', [ '(', 'alternative', 'STAR-12', ')' ], 0 ],
+  [ 'alternative_13' => 'alternative', [ 'STAR-4' ], 0 ],
+  [ 'element_14' => 'element', [ 'optional' ], 0 ],
+  [ 'element_15' => 'element', [ 'zero_or_more' ], 0 ],
+  [ 'element_16' => 'element', [ 'one_or_more' ], 0 ],
+  [ 'element_17' => 'element', [ 'text' ], 0 ],
+  [ 'element_18' => 'element', [ 'id' ], 0 ],
+  [ 'element_19' => 'element', [ '(', 'alternatives', ')' ], 0 ],
+  [ 'optional_20' => 'optional', [ 'element', '?' ], 0 ],
+  [ 'zero_or_more_21' => 'zero_or_more', [ 'element', '*' ], 0 ],
+  [ 'one_or_more_22' => 'one_or_more', [ 'element', '+' ], 0 ],
+  [ 'text_23' => 'text', [ 'StringLiteral' ], 0 ],
+  [ 'text_24' => 'text', [ 'Regex' ], 0 ],
+  [ 'id_25' => 'id', [ 'Identifier' ], 0 ],
 ],
     yyLABELS  =>
 {
   '_SUPERSTART' => 0,
-  'file_1' => 1,
-  '_OPTIONAL' => 2,
-  '_OPTIONAL' => 3,
-  '_PAREN' => 4,
-  '_OPTIONAL' => 5,
-  '_OPTIONAL' => 6,
-  'header_section_7' => 7,
+  'yavi_1' => 1,
+  'ebnf_2' => 2,
+  '_STAR_LIST' => 3,
+  '_STAR_LIST' => 4,
+  'rulelist_5' => 5,
+  'rule_6' => 6,
+  '_PAREN' => 7,
   '_STAR_LIST' => 8,
   '_STAR_LIST' => 9,
-  'definitions_10' => 10,
-  'definition_11' => 11,
-  'definition_12' => 12,
-  'definition_13' => 13,
-  'body_section_14' => 14,
-  '_OPTIONAL' => 15,
-  '_OPTIONAL' => 16,
-  'tail_section_17' => 17,
-  'ebnf_18' => 18,
-  '_STAR_LIST' => 19,
-  '_STAR_LIST' => 20,
-  'rules_21' => 21,
-  'rule_22' => 22,
-  'rulename_23' => 23,
-  '_PLUS_LIST' => 24,
-  '_PLUS_LIST' => 25,
-  '_PLUS_LIST' => 26,
-  '_PLUS_LIST' => 27,
-  '_PAREN' => 28,
-  '_STAR_LIST' => 29,
-  '_STAR_LIST' => 30,
-  'alternatives_31' => 31,
-  'alternatives_32' => 32,
-  'alternative_33' => 33,
-  'alternative_34' => 34,
-  'alternative_35' => 35,
-  'alternative_36' => 36,
-  '_PAREN' => 37,
-  '_STAR_LIST' => 38,
-  '_STAR_LIST' => 39,
-  'expression_40' => 40,
-  'expression_41' => 41,
-  'expression_42' => 42,
-  'expression_43' => 43,
+  'alternatives_10' => 10,
+  '_STAR_LIST' => 11,
+  '_STAR_LIST' => 12,
+  'alternative_13' => 13,
+  'element_14' => 14,
+  'element_15' => 15,
+  'element_16' => 16,
+  'element_17' => 17,
+  'element_18' => 18,
+  'element_19' => 19,
+  'optional_20' => 20,
+  'zero_or_more_21' => 21,
+  'one_or_more_22' => 22,
+  'text_23' => 23,
+  'text_24' => 24,
+  'id_25' => 25,
 },
     yyTERMS  =>
 { '' => { ISSEMANTIC => 0 },
-	'%%' => { ISSEMANTIC => 0 },
-	'%token' => { ISSEMANTIC => 0 },
-	'%type' => { ISSEMANTIC => 0 },
-	'%union' => { ISSEMANTIC => 0 },
-	'%{' => { ISSEMANTIC => 0 },
-	'%}' => { ISSEMANTIC => 0 },
 	'(' => { ISSEMANTIC => 0 },
 	')' => { ISSEMANTIC => 0 },
 	'*' => { ISSEMANTIC => 0 },
@@ -191,624 +146,359 @@ sub new {
 	';' => { ISSEMANTIC => 0 },
 	'?' => { ISSEMANTIC => 0 },
 	'|' => { ISSEMANTIC => 0 },
-	HEAD_CODE => { ISSEMANTIC => 1 },
-	IDENTIFIER => { ISSEMANTIC => 1 },
-	RAW_REGEX => { ISSEMANTIC => 1 },
-	REGEX => { ISSEMANTIC => 1 },
-	STRINGLITERAL => { ISSEMANTIC => 1 },
-	TAIL_CODE => { ISSEMANTIC => 1 },
+	Identifier => { ISSEMANTIC => 1 },
+	Regex => { ISSEMANTIC => 1 },
+	StringLiteral => { ISSEMANTIC => 1 },
 	error => { ISSEMANTIC => 0 },
 },
     yyFILENAME  => 'lib\Parse\Yavi\EBNF.eyp',
     yystates =>
 [
 	{#State 0
-		ACTIONS => {
-			"%{" => 1
-		},
-		DEFAULT => -6,
+		DEFAULT => -4,
 		GOTOS => {
-			'header_section' => 2,
-			'file' => 3,
-			'PAREN-2' => 5,
-			'OPTIONAL-3' => 4
+			'ebnf' => 1,
+			'STAR-1' => 2,
+			'yavi' => 3,
+			'rulelist' => 4
 		}
 	},
 	{#State 1
-		ACTIONS => {
-			'HEAD_CODE' => 7
-		},
-		DEFAULT => -3,
-		GOTOS => {
-			'OPTIONAL-1' => 6
-		}
+		DEFAULT => -1
 	},
 	{#State 2
 		ACTIONS => {
-			"%%" => 8
+			'' => -5,
+			'Identifier' => 5
+		},
+		GOTOS => {
+			'rule' => 7,
+			'id' => 6
 		}
 	},
 	{#State 3
 		ACTIONS => {
-			'' => 9
+			'' => 8
 		}
 	},
 	{#State 4
-		DEFAULT => -9,
-		GOTOS => {
-			'definitions' => 11,
-			'STAR-4' => 10
-		}
+		DEFAULT => -2
 	},
 	{#State 5
-		DEFAULT => -5
+		DEFAULT => -25
 	},
 	{#State 6
 		ACTIONS => {
-			"%}" => 12
+			":" => 9
 		}
 	},
 	{#State 7
-		DEFAULT => -2
+		DEFAULT => -3
 	},
 	{#State 8
-		DEFAULT => -20,
-		GOTOS => {
-			'body_section' => 14,
-			'ebnf' => 13,
-			'STAR-6' => 15,
-			'rules' => 16
-		}
+		DEFAULT => 0
 	},
 	{#State 9
-		DEFAULT => 0
+		DEFAULT => -12,
+		GOTOS => {
+			'alternatives' => 10,
+			'alternative' => 11,
+			'STAR-4' => 12
+		}
 	},
 	{#State 10
 		ACTIONS => {
-			"%token" => 17,
-			"%union" => 19,
-			"%type" => 18
-		},
-		DEFAULT => -10,
-		GOTOS => {
-			'definition' => 20
+			";" => 13
 		}
 	},
 	{#State 11
-		DEFAULT => -7
+		DEFAULT => -9,
+		GOTOS => {
+			'STAR-3' => 14
+		}
 	},
 	{#State 12
-		DEFAULT => -4
+		ACTIONS => {
+			'Regex' => 15,
+			";" => -13,
+			'StringLiteral' => 16,
+			"(" => 21,
+			"|" => -13,
+			'Identifier' => 5,
+			")" => -13
+		},
+		GOTOS => {
+			'zero_or_more' => 20,
+			'text' => 22,
+			'id' => 23,
+			'optional' => 17,
+			'one_or_more' => 18,
+			'element' => 19
+		}
 	},
 	{#State 13
-		DEFAULT => -14
+		DEFAULT => -6
 	},
 	{#State 14
 		ACTIONS => {
-			"%%" => 21
+			"|" => 25,
+			";" => -10,
+			")" => -10
+		},
+		GOTOS => {
+			'PAREN-2' => 24
 		}
 	},
 	{#State 15
-		ACTIONS => {
-			'IDENTIFIER' => 22
-		},
-		DEFAULT => -21,
-		GOTOS => {
-			'rulename' => 23,
-			'rule' => 24
-		}
+		DEFAULT => -24
 	},
 	{#State 16
-		DEFAULT => -18
+		DEFAULT => -23
 	},
 	{#State 17
-		ACTIONS => {
-			'IDENTIFIER' => 25
-		}
+		DEFAULT => -14
 	},
 	{#State 18
-		DEFAULT => -13
+		DEFAULT => -16
 	},
 	{#State 19
-		DEFAULT => -12
+		ACTIONS => {
+			'Regex' => -11,
+			"?" => 26,
+			";" => -11,
+			"+" => 27,
+			'StringLiteral' => -11,
+			"(" => -11,
+			"|" => -11,
+			"*" => 28,
+			'Identifier' => -11,
+			")" => -11
+		}
 	},
 	{#State 20
-		DEFAULT => -8
+		DEFAULT => -15
 	},
 	{#State 21
-		ACTIONS => {
-			'TAIL_CODE' => 26
-		},
-		DEFAULT => -16,
+		DEFAULT => -12,
 		GOTOS => {
-			'tail_section' => 27,
-			'OPTIONAL-5' => 28
+			'alternatives' => 29,
+			'alternative' => 11,
+			'STAR-4' => 12
 		}
 	},
 	{#State 22
-		DEFAULT => -23
+		DEFAULT => -17
 	},
 	{#State 23
-		ACTIONS => {
-			":" => 29
-		}
+		DEFAULT => -18
 	},
 	{#State 24
-		DEFAULT => -19
+		DEFAULT => -8
 	},
 	{#State 25
-		ACTIONS => {
-			'RAW_REGEX' => 30
+		DEFAULT => -12,
+		GOTOS => {
+			'alternative' => 30,
+			'STAR-4' => 12
 		}
 	},
 	{#State 26
-		DEFAULT => -15
+		DEFAULT => -20
 	},
 	{#State 27
-		DEFAULT => -1
+		DEFAULT => -22
 	},
 	{#State 28
-		DEFAULT => -17
+		DEFAULT => -21
 	},
 	{#State 29
 		ACTIONS => {
-			"(" => 36,
-			'IDENTIFIER' => 22,
-			'STRINGLITERAL' => 32,
-			'REGEX' => 33
-		},
-		DEFAULT => -32,
-		GOTOS => {
-			'PLUS-7' => 35,
-			'alternatives' => 31,
-			'expression' => 37,
-			'alternative' => 38,
-			'rulename' => 34
+			")" => 31
 		}
 	},
 	{#State 30
-		DEFAULT => -11
+		DEFAULT => -7
 	},
 	{#State 31
-		ACTIONS => {
-			";" => 39
-		}
-	},
-	{#State 32
-		DEFAULT => -41
-	},
-	{#State 33
-		DEFAULT => -42
-	},
-	{#State 34
-		DEFAULT => -40
-	},
-	{#State 35
-		ACTIONS => {
-			"(" => 36,
-			'IDENTIFIER' => 22,
-			'STRINGLITERAL' => 32,
-			'REGEX' => 33
-		},
-		DEFAULT => -30,
-		GOTOS => {
-			'STAR-10' => 40,
-			'expression' => 37,
-			'alternative' => 41,
-			'rulename' => 34
-		}
-	},
-	{#State 36
-		ACTIONS => {
-			"(" => 36,
-			'IDENTIFIER' => 22,
-			'STRINGLITERAL' => 32,
-			'REGEX' => 33
-		},
-		GOTOS => {
-			'expression' => 37,
-			'alternative' => 42,
-			'rulename' => 34
-		}
-	},
-	{#State 37
-		ACTIONS => {
-			"?" => 43,
-			"+" => 44,
-			"*" => 45
-		},
-		DEFAULT => -36
-	},
-	{#State 38
-		DEFAULT => -25
-	},
-	{#State 39
-		DEFAULT => -22
-	},
-	{#State 40
-		ACTIONS => {
-			"|" => 47
-		},
-		DEFAULT => -31,
-		GOTOS => {
-			'PAREN-9' => 46
-		}
-	},
-	{#State 41
-		DEFAULT => -24
-	},
-	{#State 42
-		DEFAULT => -39,
-		GOTOS => {
-			'STAR-12' => 48
-		}
-	},
-	{#State 43
-		DEFAULT => -33
-	},
-	{#State 44
-		DEFAULT => -35
-	},
-	{#State 45
-		DEFAULT => -34
-	},
-	{#State 46
-		DEFAULT => -29
-	},
-	{#State 47
-		ACTIONS => {
-			"(" => 36,
-			'IDENTIFIER' => 22,
-			'STRINGLITERAL' => 32,
-			'REGEX' => 33
-		},
-		GOTOS => {
-			'expression' => 37,
-			'PLUS-8' => 50,
-			'alternative' => 49,
-			'rulename' => 34
-		}
-	},
-	{#State 48
-		ACTIONS => {
-			"|" => 51,
-			")" => 53
-		},
-		GOTOS => {
-			'PAREN-11' => 52
-		}
-	},
-	{#State 49
-		DEFAULT => -27
-	},
-	{#State 50
-		ACTIONS => {
-			"(" => 36,
-			'IDENTIFIER' => 22,
-			'STRINGLITERAL' => 32,
-			'REGEX' => 33
-		},
-		DEFAULT => -28,
-		GOTOS => {
-			'expression' => 37,
-			'alternative' => 54,
-			'rulename' => 34
-		}
-	},
-	{#State 51
-		ACTIONS => {
-			"(" => 36,
-			'IDENTIFIER' => 22,
-			'STRINGLITERAL' => 32,
-			'REGEX' => 33
-		},
-		GOTOS => {
-			'expression' => 37,
-			'alternative' => 55,
-			'rulename' => 34
-		}
-	},
-	{#State 52
-		DEFAULT => -38
-	},
-	{#State 53
-		DEFAULT => -43
-	},
-	{#State 54
-		DEFAULT => -26
-	},
-	{#State 55
-		DEFAULT => -37
+		DEFAULT => -19
 	}
 ],
     yyrules  =>
 [
 	[#Rule _SUPERSTART
 		 '$start', 2, undef
-#line 528 lib\Parse\Yavi\EBNF.pm
+#line 330 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule file_1
-		 'file', 5,
+	[#Rule yavi_1
+		 'yavi', 1, undef
+#line 334 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule ebnf_2
+		 'ebnf', 1, undef
+#line 338 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule _STAR_LIST
+		 'STAR-1', 2,
 sub {
 #line 23 "lib\Parse\Yavi\EBNF.eyp"
-{header => $_[1], body => $_[3], tail => $_[5]}}
-#line 535 lib\Parse\Yavi\EBNF.pm
+ goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
+#line 345 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule _OPTIONAL
-		 'OPTIONAL-1', 1,
+	[#Rule _STAR_LIST
+		 'STAR-1', 0,
 sub {
-#line 27 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_single }
-#line 542 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _OPTIONAL
-		 'OPTIONAL-1', 0,
-sub {
-#line 27 "lib\Parse\Yavi\EBNF.eyp"
+#line 23 "lib\Parse\Yavi\EBNF.eyp"
  goto &Parse::Eyapp::Driver::YYActionforT_empty }
-#line 549 lib\Parse\Yavi\EBNF.pm
+#line 352 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule rulelist_5
+		 'rulelist', 1, undef
+#line 356 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule rule_6
+		 'rule', 4,
+sub {
+#line 28 "lib\Parse\Yavi\EBNF.eyp"
+{rulename => $_[1], alternatives => $_[3]}}
+#line 363 lib\Parse\Yavi\EBNF.pm
 	],
 	[#Rule _PAREN
-		 'PAREN-2', 3,
+		 'PAREN-2', 2,
 sub {
-#line 27 "lib\Parse\Yavi\EBNF.eyp"
+#line 32 "lib\Parse\Yavi\EBNF.eyp"
  goto &Parse::Eyapp::Driver::YYActionforParenthesis}
-#line 556 lib\Parse\Yavi\EBNF.pm
+#line 370 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule _OPTIONAL
-		 'OPTIONAL-3', 1,
+	[#Rule _STAR_LIST
+		 'STAR-3', 2,
 sub {
-#line 27 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_single }
-#line 563 lib\Parse\Yavi\EBNF.pm
+#line 32 "lib\Parse\Yavi\EBNF.eyp"
+ goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
+#line 377 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule _OPTIONAL
-		 'OPTIONAL-3', 0,
+	[#Rule _STAR_LIST
+		 'STAR-3', 0,
 sub {
-#line 27 "lib\Parse\Yavi\EBNF.eyp"
+#line 32 "lib\Parse\Yavi\EBNF.eyp"
  goto &Parse::Eyapp::Driver::YYActionforT_empty }
-#line 570 lib\Parse\Yavi\EBNF.pm
+#line 384 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule header_section_7
-		 'header_section', 2,
+	[#Rule alternatives_10
+		 'alternatives', 2,
 sub {
-#line 29 "lib\Parse\Yavi\EBNF.eyp"
-{snippet => {}, definitions => $_[2]}}
-#line 577 lib\Parse\Yavi\EBNF.pm
+#line 33 "lib\Parse\Yavi\EBNF.eyp"
+
+            my @alts;
+
+            push @alts, $_[1];
+            for my $rest (@{$_[2]})
+            {
+                my ($bar, $alt)= @$rest;
+                push @alts, $alt;
+            }
+
+            \@alts;
+        }
+#line 402 lib\Parse\Yavi\EBNF.pm
 	],
 	[#Rule _STAR_LIST
 		 'STAR-4', 2,
 sub {
-#line 33 "lib\Parse\Yavi\EBNF.eyp"
+#line 48 "lib\Parse\Yavi\EBNF.eyp"
  goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
-#line 584 lib\Parse\Yavi\EBNF.pm
+#line 409 lib\Parse\Yavi\EBNF.pm
 	],
 	[#Rule _STAR_LIST
 		 'STAR-4', 0,
 sub {
-#line 33 "lib\Parse\Yavi\EBNF.eyp"
+#line 48 "lib\Parse\Yavi\EBNF.eyp"
  goto &Parse::Eyapp::Driver::YYActionforT_empty }
-#line 591 lib\Parse\Yavi\EBNF.pm
+#line 416 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule definitions_10
-		 'definitions', 1, undef
-#line 595 lib\Parse\Yavi\EBNF.pm
+	[#Rule alternative_13
+		 'alternative', 1, undef
+#line 420 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule definition_11
-		 'definition', 3,
+	[#Rule element_14
+		 'element', 1, undef
+#line 424 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule element_15
+		 'element', 1, undef
+#line 428 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule element_16
+		 'element', 1, undef
+#line 432 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule element_17
+		 'element', 1, undef
+#line 436 lib\Parse\Yavi\EBNF.pm
+	],
+	[#Rule element_18
+		 'element', 1,
 sub {
-#line 38 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'token', name => $_[2], regex => $_[3]}}
-#line 602 lib\Parse\Yavi\EBNF.pm
+#line 57 "lib\Parse\Yavi\EBNF.eyp"
+{kind => 'reference', value => $_[1]}}
+#line 443 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule definition_12
-		 'definition', 1,
+	[#Rule element_19
+		 'element', 3,
 sub {
-#line 40 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'union'}}
-#line 609 lib\Parse\Yavi\EBNF.pm
+#line 59 "lib\Parse\Yavi\EBNF.eyp"
+$_[2]}
+#line 450 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule definition_13
-		 'definition', 1,
+	[#Rule optional_20
+		 'optional', 2,
 sub {
-#line 42 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'type'}}
-#line 616 lib\Parse\Yavi\EBNF.pm
+#line 64 "lib\Parse\Yavi\EBNF.eyp"
+{kind => 'element', value => $_[1], modifier => '?'}}
+#line 457 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule body_section_14
-		 'body_section', 1, undef
-#line 620 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _OPTIONAL
-		 'OPTIONAL-5', 1,
+	[#Rule zero_or_more_21
+		 'zero_or_more', 2,
 sub {
-#line 50 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_single }
-#line 627 lib\Parse\Yavi\EBNF.pm
+#line 69 "lib\Parse\Yavi\EBNF.eyp"
+{kind => 'element', value => $_[1], modifier => '*'}}
+#line 464 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule _OPTIONAL
-		 'OPTIONAL-5', 0,
+	[#Rule one_or_more_22
+		 'one_or_more', 2,
 sub {
-#line 50 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_empty }
-#line 634 lib\Parse\Yavi\EBNF.pm
+#line 74 "lib\Parse\Yavi\EBNF.eyp"
+{kind => 'element', value => $_[1], modifier => '+'}}
+#line 471 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule tail_section_17
-		 'tail_section', 1, undef
-#line 638 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule ebnf_18
-		 'ebnf', 1, undef
-#line 642 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _STAR_LIST
-		 'STAR-6', 2,
+	[#Rule text_23
+		 'text', 1,
 sub {
-#line 58 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
-#line 649 lib\Parse\Yavi\EBNF.pm
+#line 79 "lib\Parse\Yavi\EBNF.eyp"
+
+            my $s= $_[1];
+            $s=~ s/^['"]|['"]$//g;
+            {kind => 'string', value => $s};
+        }
+#line 482 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule _STAR_LIST
-		 'STAR-6', 0,
+	[#Rule text_24
+		 'text', 1,
 sub {
-#line 58 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_empty }
-#line 656 lib\Parse\Yavi\EBNF.pm
+#line 85 "lib\Parse\Yavi\EBNF.eyp"
+
+            my $s= $_[1];
+            $s=~ s/^qr(.)//;
+            $s=~ s/$1$//;
+            {kind => 'regex', value => $s};
+        }
+#line 494 lib\Parse\Yavi\EBNF.pm
 	],
-	[#Rule rules_21
-		 'rules', 1, undef
-#line 660 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule rule_22
-		 'rule', 4,
-sub {
-#line 63 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'rule', name => $_[1], value => $_[3]}}
-#line 667 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule rulename_23
-		 'rulename', 1,
-sub {
-#line 68 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'id', value => $_[1]}}
-#line 674 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _PLUS_LIST
-		 'PLUS-7', 2,
-sub {
-#line 72 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
-#line 681 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _PLUS_LIST
-		 'PLUS-7', 1,
-sub {
-#line 72 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_single }
-#line 688 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _PLUS_LIST
-		 'PLUS-8', 2,
-sub {
-#line 72 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
-#line 695 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _PLUS_LIST
-		 'PLUS-8', 1,
-sub {
-#line 72 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_single }
-#line 702 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _PAREN
-		 'PAREN-9', 2,
-sub {
-#line 72 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforParenthesis}
-#line 709 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _STAR_LIST
-		 'STAR-10', 2,
-sub {
-#line 72 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
-#line 716 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _STAR_LIST
-		 'STAR-10', 0,
-sub {
-#line 72 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_empty }
-#line 723 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule alternatives_31
-		 'alternatives', 2, undef
-#line 727 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule alternatives_32
-		 'alternatives', 0, undef
-#line 731 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule alternative_33
-		 'alternative', 2,
-sub {
-#line 78 "lib\Parse\Yavi\EBNF.eyp"
-{kind => '?', value => $_[1]}}
-#line 738 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule alternative_34
-		 'alternative', 2,
-sub {
-#line 80 "lib\Parse\Yavi\EBNF.eyp"
-{kind => '*', value => $_[1]}}
-#line 745 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule alternative_35
-		 'alternative', 2,
-sub {
-#line 82 "lib\Parse\Yavi\EBNF.eyp"
-{kind => '+', value => $_[1]}}
-#line 752 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule alternative_36
-		 'alternative', 1,
-sub {
-#line 84 "lib\Parse\Yavi\EBNF.eyp"
-$_[1]}
-#line 759 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _PAREN
-		 'PAREN-11', 2,
-sub {
-#line 94 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforParenthesis}
-#line 766 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _STAR_LIST
-		 'STAR-12', 2,
-sub {
-#line 94 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_TX1X2 }
-#line 773 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule _STAR_LIST
-		 'STAR-12', 0,
-sub {
-#line 94 "lib\Parse\Yavi\EBNF.eyp"
- goto &Parse::Eyapp::Driver::YYActionforT_empty }
-#line 780 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule expression_40
-		 'expression', 1,
-sub {
-#line 89 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'ref', value => $_[1]}}
-#line 787 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule expression_41
-		 'expression', 1,
-sub {
-#line 91 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'string', value => $_[1]}}
-#line 794 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule expression_42
-		 'expression', 1,
-sub {
-#line 93 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'regex', value => $_[1]}}
-#line 801 lib\Parse\Yavi\EBNF.pm
-	],
-	[#Rule expression_43
-		 'expression', 4,
-sub {
-#line 95 "lib\Parse\Yavi\EBNF.eyp"
-{kind => 'group', value => $_[2]}}
-#line 808 lib\Parse\Yavi\EBNF.pm
+	[#Rule id_25
+		 'id', 1, undef
+#line 498 lib\Parse\Yavi\EBNF.pm
 	]
 ],
-#line 811 lib\Parse\Yavi\EBNF.pm
+#line 501 lib\Parse\Yavi\EBNF.pm
     yybypass       => 0,
     yybuildingtree => 0,
     yyprefix       => '',
@@ -823,53 +513,35 @@ sub {
 
   $self->make_node_classes('TERMINAL', '_OPTIONAL', '_STAR_LIST', '_PLUS_LIST', 
          '_SUPERSTART', 
-         'file_1', 
-         '_OPTIONAL', 
-         '_OPTIONAL', 
-         '_PAREN', 
-         '_OPTIONAL', 
-         '_OPTIONAL', 
-         'header_section_7', 
+         'yavi_1', 
+         'ebnf_2', 
          '_STAR_LIST', 
          '_STAR_LIST', 
-         'definitions_10', 
-         'definition_11', 
-         'definition_12', 
-         'definition_13', 
-         'body_section_14', 
-         '_OPTIONAL', 
-         '_OPTIONAL', 
-         'tail_section_17', 
-         'ebnf_18', 
-         '_STAR_LIST', 
-         '_STAR_LIST', 
-         'rules_21', 
-         'rule_22', 
-         'rulename_23', 
-         '_PLUS_LIST', 
-         '_PLUS_LIST', 
-         '_PLUS_LIST', 
-         '_PLUS_LIST', 
+         'rulelist_5', 
+         'rule_6', 
          '_PAREN', 
          '_STAR_LIST', 
          '_STAR_LIST', 
-         'alternatives_31', 
-         'alternatives_32', 
-         'alternative_33', 
-         'alternative_34', 
-         'alternative_35', 
-         'alternative_36', 
-         '_PAREN', 
+         'alternatives_10', 
          '_STAR_LIST', 
          '_STAR_LIST', 
-         'expression_40', 
-         'expression_41', 
-         'expression_42', 
-         'expression_43', );
+         'alternative_13', 
+         'element_14', 
+         'element_15', 
+         'element_16', 
+         'element_17', 
+         'element_18', 
+         'element_19', 
+         'optional_20', 
+         'zero_or_more_21', 
+         'one_or_more_22', 
+         'text_23', 
+         'text_24', 
+         'id_25', );
   $self;
 }
 
-#line 98 "lib\Parse\Yavi\EBNF.eyp"
+#line 97 "lib\Parse\Yavi\EBNF.eyp"
 
 
 1;
@@ -880,7 +552,7 @@ sub {
 =cut
 
 
-#line 883 lib\Parse\Yavi\EBNF.pm
+#line 555 lib\Parse\Yavi\EBNF.pm
 
 
 

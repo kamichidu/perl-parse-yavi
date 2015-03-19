@@ -40,8 +40,9 @@ use warnings;
 use Carp qw/croak cluck/;
 use Getopt::Long qw/:config posix_default no_ignore_case gnu_compat/;
 use Pod::Usage;
-use Parse::Yavi::EBNF;
-use Perl6::Slurp;
+use Parse::Yavi;
+use IO::File;
+use File::Basename;
 
 my %opts;
 GetOptions(
@@ -54,29 +55,19 @@ GetOptions(
 pod2usage(2) if $opts{help};
 pod2usage(2) if @ARGV <= 0;
 
-my ($gramamrfile)= @ARGV;
+my ($grammarfile)= @ARGV;
 
-unless(-f $gramamrfile)
+unless(-f $grammarfile)
 {
-    die "File not exist `$gramamrfile'.";
+    die "File not exist `$grammarfile'.";
 }
 
-my $ebnf_parser= Parse::Yavi::EBNF->new;
+$opts{outfile}||= basename($grammarfile) . '.vim';
 
-{
-    my $input= slurp '<:encoding(utf8)', $gramamrfile
-        or die "Couldn't read `$gramamrfile'.";
-    $ebnf_parser->input($input);
-}
+my $yavi= Parse::Yavi->new;
 
-# Bit Value    Outputs
-#   0x01         Token reading (useful for Lexer debugging)
-#   0x02         States information
-#   0x04         Driver actions (shifts, reduces, accept...)
-#   0x08         Parse Stack dump
-#   0x10         Error Recovery tracing
-my $value= $ebnf_parser->YYParse(yydebug => 0x01);
+my $data= $yavi->parse(IO::File->new($grammarfile));
 
-print $value || 'undef';
+$yavi->generate($data, IO::File->new($opts{outfile}));
 
 1;
